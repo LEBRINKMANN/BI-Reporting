@@ -10,7 +10,9 @@ Select  LID.Line_Item_Id AS Reference_Number
         ,LID.Gp_Po_Number AS PS_PO_Number
         ,SI.Ship_Freight 
         ,LID.PO_DATE AS Order_Date
+        ,V.COMPANY_NAME AS Vendor_Name
 From    DW.LINE_ITEM_DETAILS LID
         JOIN DW.SHIPPING_INFO SI ON SI.LINE_ITEM_ID = LID.LINE_ITEM_ID AND SI.SHIPPING_METHOD = 'COUNTER'
+        JOIN DW.VENDORS V ON V.COMPANY_ID = LID.VENDOR_ID
 Where   LID.PO_Date Between '8/1/2021' and CURRENT_TIMESTAMP         
         
