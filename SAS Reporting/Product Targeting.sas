@@ -1,5 +1,5 @@
-%let date_min = 08Aug2021;
-%let date_max = 02Feb2022;
+*%let date_min = 08Aug2021;
+*%let date_max = 02Feb2022;
 
 proc sql;
 create table Item_Returns as
@@ -35,22 +35,21 @@ From    D_DW.RAVEN_FORMULARY_OSTRING_USAGE Formulary
 Group By 1,2,3,4
 
 ;quit;
-*
+
 proc sql;
-*create table Customer_Lists as
+create table Customer_Lists as
 SELECT	Items.Item_Number,
         Vendors.Company_Id,
         Vendors.Company_Name,
         Items.Description,	
-		Count(DISTINCT pr.cust_list_company_id) as Num_of_Lists_Involved
-FROM 	D_DW.Apollo_Add_To-List as al
-        join D_DW.Apollo_Delete_List dl on 
-        join D_DW.PIM_ITEMS as Items on lid.Pim_Item_Number = Items.Item_Number
+		Count(DISTINCT al.List_Name) as Num_of_Lists_Involved
+FROM 	D_DW.Apollo_Add_To_List as al
+        join D_DW.Apollo_Add_To_List_Item as atli on atli.PSPN = al.PS_Number
+        join D_DW.PIM_ITEMS as Items on atli.Pim_Item_Number = Items.Item_Number
         join D_DW.VENDORS Vendors on Vendors.Company_Id = Items.Company_Id
-WHERE   
 Group By 1,2,3,4
 ;
-*quit; 
+quit; 
 
 proc sql;
 
@@ -74,7 +73,7 @@ proc print data= Item_Returns noobs; run;
 
 proc print data= Formulary_Rules noobs; run;
 
-*proc print data= Customer_Lists noobs; *run;
+proc print data= Customer_Lists noobs; run;
 
 proc print data= Pricing_Rules noobs; run;
 
