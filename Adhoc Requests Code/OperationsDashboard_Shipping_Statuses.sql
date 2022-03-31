@@ -221,3 +221,19 @@ where  ss.last_ordered_timestamp is not null
 Group By c.LVL1_COMPANY_NAME
 with ur;
 
+--Critical Item - Not Confirmed
+Select 'Critical Item - Not Confirmed', c.LVL1_COMPANY_NAME, Count(distinct lid.line_item_id) as Status_Count
+From   Dw.Line_Item_Details lid
+       join DW.LINE_ITEM_STATUS_SUMMARY SS On SS.LINE_ITEM_ID = lid.LINE_ITEM_ID 
+       join DW.CUSTOMERS c on c.COMPANY_ID = lid.CUSTOMER_ID 
+       join DW.SHIPPING_INFO s On lid.LINE_ITEM_ID = s.LINE_ITEM_ID
+       join DW.TRACKING_NUMBERS t On lid.LINE_ITEM_ID = t.LINE_ITEM_ID  and t.SHIPMENT_LEG_ID = 1
+where  ss.last_ordered_timestamp is not null 
+       and SS.LAST_ORDERED_TIMESTAMP >=  current_timestamp - 3
+       and t.DATE_CONFIRMED is null
+       and lid.URGENCY_CODE = 'STAT'
+       and c.Lvl1_Company_Id in (119, 60891, 4782)
+Group By c.LVL1_COMPANY_NAME
+with ur;
+
+
