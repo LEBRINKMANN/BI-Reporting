@@ -48,8 +48,8 @@ SELECT v.VENDOR_ID,
        CASE
           WHEN aa.ACTION_TYPE_ID = 7 then 'PARSER'
           WHEN aa.ACTION_TYPE_ID = 11 then 'RETREVIAL'
-         WHEN tn.CREATED_USER_ID = 3 THEN 'System' --cast(aa.ACTION_TYPE_ID as varchar(25))                --system.  EDI/auto generate/reverse looku
-            WHEN tn.CREATED_USER_ID = 132392 THEN 'ePV Lite'           --vconfirmed
+         WHEN tn.CREATED_USER_ID = 3 THEN 'System' --cast(aa.ACTION_TYPE_ID as varchar(25)) --system.  EDI/auto generate/reverse looku
+            WHEN tn.CREATED_USER_ID = 132392 THEN 'ePV Lite' --vconfirmed
             when p.id_no IS NOT NULL then 'ADMIN'
             when p.id_no IS  NULL then 'ePV Full'
            
@@ -77,7 +77,8 @@ GROUP BY v.VENDOR_ID,c.COMPANY_NAME,tn.CREATED_USER_ID, p.ID_NO, aa.ACTION_TYPE_
 --group by tn.vendor_id, tn.company_name, tn.created_user;
 
 --Top Manual
-select tn.vendor_id, tn.company_name, tn.created_user, sum(tn.count) from tn
+select tn.vendor_id, tn.company_name, tn.created_user, sum(tn.count) 
+from tn
 --where tn.Created_user = 'SYSTEM'
 --where tn.company_name like 'Alpha%'
 group by tn.vendor_id, tn.company_name, tn.created_user
