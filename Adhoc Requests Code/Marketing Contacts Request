@@ -1,0 +1,86 @@
+*Marketing request - Pulling contacts for a specific list of customers, filtering out certain position codes;
+
+proc sql; create table t as select
+c.company_id
+,c.company_name
+,c.level
+,c.lvl1_company_id
+,c.lvl1_company_name
+from d_dw.customers c
+where c.company_id in (1171,96668,65277,77001,24146,24136,77110,1324,24217,130990,123442,247,31861,49875,4328,62179,24213,36388,70721,39740,37343,122428,
+32467,24143,24238,24131,26693,24150,120831,58112,50121,24215,24153,146003,34661,113248,51058,24164,31151,44896,3712,2146,51815,69386,120424,4362,60888,3298,
+3148,24163,24160,53743,24142,3248)
+and level ne 1
+;quit;
+
+proc sql; create table accounts as select
+c.lvl1_company_id
+,c.lvl1_company_name
+,c.company_id
+,c.company_name
+,sum(q.requests) as Site_Requests format=comma16.
+,sum(q.orders) as Site_Orders format=comma16.
+,sum(q.revenue) as Site_Revenue format=dollar16.
+from d_dw.rorm_all q
+left join d_dw.customers c on c.company_id = q.customer_id
+where ( c.lvl1_company_id in (1171,96668,65277,77001,24146,24136,77110,1324,24217,130990,123442,247,31861,49875,4328,62179,24213,36388,70721,39740,37343,122428,
+32467,24143,24238,24131,26693,24150,120831,58112,50121,24215,24153,146003,34661,113248,51058,24164,31151,44896,3712,2146,51815,69386,120424,4362,60888,3298,
+3148,24163,24160,53743,24142,3248)
+or c.company_id in (3712,51058,58112,65277,69386) ) /*these 5 IDs are level 2*/
+and datepart(q.transaction_date) between "01apr2022"d and "31mar2023"d
+and c.active = 'Y'
+group by 1,2,3,4
+order by lvl1_company_id,site_revenue desc
+;quit;
+
+proc sql; create table requestors as select
+a.lvl1_company_id
+,a.lvl1_company_name
+,a.company_id
+,a.company_name
+,a.site_requests
+,a.site_orders
+,a.site_revenue
+,r.requestor_id
+,r.first_name
+,r.last_name
+,r.position_code
+,r.position_description
+,r.email_address
+,max(datepart(q.transaction_date)) as last_interaction format=mmddyys10.
+,sum(q.requests) as Requestor_Requests format=comma16.
+,sum(q.orders) as Requestor_Orders format=comma16.
+,sum(q.revenue) as Requestor_Revenue format=dollar16.
+
+from work.accounts a 
+inner join d_dw.company_requestors r on r.company_id = a.company_id and r.active = 'Y'
+left join  d_dw.rorm_all q on a.company_id = q.customer_id and q.requestor_id = r.requestor_id
+	and datepart(q.transaction_date) between "01apr2022"d and "31mar2023"d
+where r.position_code not in ('ACCT PAY','EDICONT','HTM DIRECT','LOGISTICS','MAINCONT','MAINT','NURSE','PURCH DIR','QUALITY','SERVICE','TECHSUPP','VP','VP IT') 
+group by 1,2,3,4,5,6,7,8,9,10,11,12,13
+order by lvl1_company_id,site_revenue desc,requestor_revenue desc
+;quit;
+
+proc sql; create table requestors_unique as select
+r.requestor_id
+,r.first_name
+,r.last_name
+,r.position_code
+,r.position_description
+,r.email_address
+,r.lvl1_company_id
+,r.lvl1_company_name
+,max(r.last_interaction) as last_interaction format=mmddyys10.
+,sum(r.requestor_requests) as Requests format=comma16.
+,sum(r.requestor_orders) as Orders format=comma16.
+,sum(r.requestor_revenue) as Revenue format=dollar16.
+from work.requestors r
+group by 1,2,3,4,5,6,7,8
+order by requestor_id
+;quit;
+
+proc sql; create table positions as select distinct
+position_code
+,position_description
+from work.requestors
+;quit;
